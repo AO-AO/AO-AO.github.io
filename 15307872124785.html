@@ -1,0 +1,245 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  Redis实现分布式资源锁 - AO-AO
+  
+  </title>
+ <meta name="description" content="">
+ <link href="atom.xml" rel="alternate" title="AO-AO" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+    <script src="asset/highlightjs/highlight.pack.js"></script>
+    <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+<div id="header">
+    <h1><a href="index.html">AO-AO</a></h1>
+</div>
+
+</nav>
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; AO-AO</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+      <li><a href="index.html">Home</a></li>
+      
+
+      
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+        <section id="main-content" role="main" class="scroll-container">
+
+          <div class="row">
+            <div class="large-3 medium-3 columns">
+              <div class="hide-for-small">
+                <div class="sidebar">
+                <nav>
+                  <ul id="side-nav" class="side-nav">
+
+                    
+
+                    
+                  </ul>
+                </nav>
+                </div>
+              </div>
+            </div>
+            <div class="large-9 medium-9 columns">
+
+ <div class="markdown-body">
+<h1>Redis实现分布式资源锁</h1>
+
+<h3 id="toc_0">应用场景</h3>
+
+<p>高并发场景中实现对资源的快速分发.</p>
+
+<h3 id="toc_1">实现原理</h3>
+
+<h4 id="toc_2">基础</h4>
+
+<p>redis的分布式锁.</p>
+
+<blockquote>
+<p><a href="https://redis.io/topics/distlock">Redis分布式锁参考文档</a></p>
+</blockquote>
+
+<h4 id="toc_3">扩展</h4>
+
+<p>扩展redis的分布式锁, 锁的过期时间作为分发周期, 锁的value作为资源数量限制.</p>
+
+<ol>
+<li>在每次分发请求尝试重设资源锁(资源锁value为分发数量, 资源锁拥有过期时间)</li>
+<li>每次分发对资源锁-count(需要通过lua脚本自定义原子操作incrbyex)</li>
+<li>根据2中的结果判断是否分发</li>
+</ol>
+
+<h3 id="toc_4">伪代码</h3>
+
+<pre><code class="language-javascript">/**
+ * @param {String} lockName 锁key (redis key)
+ * @param {Number} resouceCount 锁value (redis value)
+ * @param {Number} period 毫秒锁过期时间 (redis expire)
+ * @returns true | false, 可以下发 | 不能下发
+ */
+async function getSetDeliverLock(lockName, resouceCount, period){
+
+    // 尝试重设deliver
+    try {
+        setReply = await trySetNewDeliver(lockName, resouceCount, period);
+    } catch (err) {
+        console.error(err);
+    }
+
+    // 控制分发
+    let incrbyexReply = null;
+    try{
+        incrbyexReply = await incrbyex(lockName, -1);
+    } catch (err) {
+        throw(err);
+    }
+    if(incrbyexReply !== null &amp;&amp; Number(incrbyexReply) &gt;= 0){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @param {String} lockName 锁key (redis key)
+ * @param {Number} resouceCount 锁value (redis value)
+ * @param {Number} period 毫秒锁过期时间 (redis expire)
+ * @returns true | false, set成功 | set失败
+ */
+async function trySetNewDelive(lockName, resouceCount, expireTimeMs) {
+    let setReply = null;
+    try {
+        setReply = await redisCli.set(lockName, resouceCount, &#39;PX&#39;, period, &#39;NX&#39;);
+    } catch (err) {
+       throw (err);
+    }
+    if(setReply) {
+        return true;
+    } else {
+        return false;
+    }
+}
+</code></pre>
+
+<p>需要注意的是, redis的incrbyex方法是自己定义的一个原子操作, 代码如下:</p>
+
+<blockquote>
+<p>原生的redis incrby方法, 在高并发场景中, 可能因为对已经过期的key进行incrby导致死锁产生.</p>
+</blockquote>
+
+<pre><code class="language-javascript">/**
+ *
+ * @param {*} key
+ * @param {*} count
+ * @returns key不存在返回null,否则返回incrby结果
+ */
+incrbyex(key, count) {
+    let lua_script = &#39;local result,v v = redis.call(&quot;exists&quot;, ARGV[1]) if v == 1 then result = redis.call(&quot;incrby&quot;, ARGV[1], ARGV[2]) end return result&#39;;
+    return RedisCli.eval(lua_script, 0, key, count);
+}
+</code></pre>
+
+<h3 id="toc_5">优化</h3>
+
+<ol>
+<li>trySetNewDelive 会对redis primary节点造成较大压力, 可以先通过redis replica节点校验锁是否存在来减轻primary节点的压力.</li>
+</ol>
+
+
+</div>
+
+<br /><br />
+<hr />
+
+<div class="row clearfix">
+  <div class="large-6 columns">
+	<div class="text-left" style="padding:15px 0px;">
+		
+	        <a href="15307877343133.html"  title="Previous Post: ">&laquo; </a>
+	    
+	</div>
+  </div>
+  <div class="large-6 columns">
+	<div class="text-right" style="padding:15px 0px;">
+		
+	</div>
+  </div>
+</div>
+
+<div class="row">
+<div style="padding:0px 0.93em;" class="share-comments">
+
+</div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var currentURL = '15307872124785.html';
+		$('#side-nav a').each(function(){
+			if($(this).attr('href') == currentURL){
+				$(this).parent().addClass('active');
+			}
+		});
+	});
+</script>  
+</div></div>
+
+
+<div class="page-bottom">
+  <div class="row">
+  <hr />
+  <div class="small-9 columns">
+  <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+  <div class="small-3 columns">
+  <p class="copyright text-right"><a href="#header">TOP</a></p>
+  </div>
+   
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+    
+    
+    <script src="asset/js/foundation.min.js"></script>
+    <script src="asset/js/foundation/foundation.offcanvas.js"></script>
+    <script>
+      $(document).foundation();
+
+     
+    </script>
+    
+
+
+  </body>
+</html>
