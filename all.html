@@ -8,17 +8,23 @@
   AO-AO
   
   </title>
- <meta name="description" content="">
- <link href="atom.xml" rel="alternate" title="AO-AO" type="application/atom+xml">
+  
+  
+  <link href="atom.xml" rel="alternate" title="AO-AO" type="application/atom+xml">
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
-
     <script src="asset/js/vendor/modernizr.js"></script>
     <script src="asset/js/vendor/jquery.js"></script>
-    <script src="asset/highlightjs/highlight.pack.js"></script>
-    <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
-    <script>hljs.initHighlightingOnLoad();</script>
-    
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:ao-ao.github.io ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
   </head>
   <body class="antialiased hide-extras">
     
@@ -28,11 +34,32 @@
 
 <nav class="top-bar docs-bar hide-for-small" data-topbar>
 
-<div id="header">
-    <h1><a href="index.html">AO-AO</a></h1>
-</div>
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
 
 </nav>
+
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
     <span> &nbsp; AO-AO</span>
@@ -41,85 +68,280 @@
 
 <aside class="left-off-canvas-menu">
       <ul class="off-canvas-list">
-      <li><a href="index.html">Home</a></li>
-      
+        
+        <li><a target="self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
 
-      
+    <li><label>Categories</label></li>
+
+         
+
       </ul>
     </aside>
 
 <a class="exit-off-canvas" href="#"></a>
 
+
         <section id="main-content" role="main" class="scroll-container">
+        
+       
 
-          <div class="row">
-            <div class="large-3 medium-3 columns">
-              <div class="hide-for-small">
-                <div class="sidebar">
-                <nav>
-                  <ul id="side-nav" class="side-nav">
+ <script type="text/javascript">
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
+</script>
+<div class="row">
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="15307872124785.html">
+                
+                  <h1>Redis实现分布式资源锁</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h3 id="toc_0">应用场景</h3>
 
-                    
+<p>高并发场景中实现对资源的快速分发.</p>
 
-                    
-                  </ul>
-                </nav>
-                </div>
-              </div>
-            </div>
-            <div class="large-9 medium-9 columns">
+<h3 id="toc_1">实现原理</h3>
 
- 
+<h4 id="toc_2">基础</h4>
 
+<p>redis的分布式锁.</p>
 
-	
-		<div class="markdown-body">
-		<h1></h1>
+<blockquote>
+<p><a href="https://redis.io/topics/distlock">Redis分布式锁参考文档</a></p>
+</blockquote>
 
-		<ol>
-<li><a href="./resources/redis-deliver.md">Redis实现分布式分发控制器</a></li>
+<h4 id="toc_3">扩展</h4>
+
+<p>扩展redis的分布式锁, 锁的过期时间作为分发周期, 锁的value作为资源数量限制.</p>
+
+<ol>
+<li>在每次分发请求尝试重设资源锁(资源锁value为分发数量, 资源锁拥有过期时间)</li>
+<li>每次分发对资源锁-count(需要通过lua脚本自定义原子操作incrbyex)</li>
+<li>根据2中的结果判断是否分发</li>
 </ol>
 
+<h3 id="toc_4">伪代码</h3>
 
+<pre><code class="language-javascript">/**
+ * @param {String} lockName 锁key (redis key)
+ * @param {Number} resouceCount 锁value (redis value)
+ * @param {Number} period 毫秒锁过期时间 (redis expire)
+ * @returns true | false, 可以下发 | 不能下发
+ */
+async function getSetDeliverLock(lockName, resouceCount, period){
+
+    // 尝试重设deliver
+    try {
+        setReply = await trySetNewDeliver(lockName, resouceCount, period);
+    } catch (err) {
+        console.error(err);
+    }
+
+    // 控制分发
+    let incrbyexReply = null;
+    try{
+        incrbyexReply = await incrbyex(lockName, -1);
+    } catch (err) {
+        throw(err);
+    }
+    if(incrbyexReply !== null &amp;&amp; Number(incrbyexReply) &gt;= 0){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @param {String} lockName 锁key (redis key)
+ * @param {Number} resouceCount 锁value (redis value)
+ * @param {Number} period 毫秒锁过期时间 (redis expire)
+ * @returns true | false, set成功 | set失败
+ */
+async function trySetNewDelive(lockName, resouceCount, expireTimeMs) {
+    let setReply = null;
+    try {
+        setReply = await redisCli.set(lockName, resouceCount, &#39;PX&#39;, period, &#39;NX&#39;);
+    } catch (err) {
+       throw (err);
+    }
+    if(setReply) {
+        return true;
+    } else {
+        return false;
+    }
+}
+</code></pre>
+
+<p>需要注意的是, redis的incrbyex方法是自己定义的一个原子操作, 代码如下:</p>
+
+<blockquote>
+<p>原生的redis incrby方法, 在高并发场景中, 可能因为对已经过期的key进行incrby导致死锁产生.</p>
+</blockquote>
+
+<pre><code class="language-javascript">/**
+ *
+ * @param {*} key
+ * @param {*} count
+ * @returns key不存在返回null,否则返回incrby结果
+ */
+incrbyex(key, count) {
+    let lua_script = &#39;local result,v v = redis.call(&quot;exists&quot;, ARGV[1]) if v == 1 then result = redis.call(&quot;incrby&quot;, ARGV[1], ARGV[2]) end return result&#39;;
+    return RedisCli.eval(lua_script, 0, key, count);
+}
+</code></pre>
+
+<h3 id="toc_5">优化</h3>
+
+<ol>
+<li>trySetNewDelive 会对redis primary节点造成较大压力, 可以先通过redis replica节点校验锁是否存在来减轻primary节点的压力.</li>
+</ol>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/7/5 18:40 PM</span>
+                    
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
 		</div>
-	
+	</div><!-- large 8 -->
 
- 
-	
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="/Users/xuao/Documents/GitPage/favicon.ico" /></div>
+            
+                <h1>AO-AO</h1>
+                <div class="site-des"></div>
+                <div class="social">
 
-  
-  
-</div></div>
 
 
-<div class="page-bottom">
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/AO-AO" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:583252976@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15307872124785.html">Redis实现分布式资源锁</a>
+			      </li>
+		     
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
   <div class="row">
-  <hr />
-  <div class="small-9 columns">
-  <p class="copyright">Copyright &copy; 2015
+   <p class="copyright">Copyright &copy; 2015
 Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
 Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
-  </div>
-  <div class="small-3 columns">
-  <p class="copyright text-right"><a href="#header">TOP</a></p>
-  </div>
-   
   </div>
 </div>
 
         </section>
       </div>
     </div>
+
+  
     
-    
+
     <script src="asset/js/foundation.min.js"></script>
-    <script src="asset/js/foundation/foundation.offcanvas.js"></script>
     <script>
       $(document).foundation();
-
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
      
     </script>
+
     
+
 
 
   </body>

@@ -4,27 +4,13 @@
   <title><![CDATA[AO-AO]]></title>
   <link href="https://ao-ao.github.io/atom.xml" rel="self"/>
   <link href="https://ao-ao.github.io/"/>
-  <updated>2018-07-05T18:49:35+08:00</updated>
+  <updated>2018-07-05T19:00:18+08:00</updated>
   <id>https://ao-ao.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
-  <generator uri="http://www.mweb.im">MWeb</generator>
-
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="https://ao-ao.github.io/15307877343133.html"/>
-    <updated>2018-07-05T18:48:54+08:00</updated>
-    <id>https://ao-ao.github.io/15307877343133.html</id>
-    <content type="html"><![CDATA[
-<ol>
-<li><a href="./resources/redis-deliver.md">Redis实现分布式分发控制器</a></li>
-</ol>
-
-]]></content>
-  </entry>
+  <generator uri="http://www.mweb.im/">MWeb</generator>
   
   <entry>
     <title type="html"><![CDATA[Redis实现分布式资源锁]]></title>
