@@ -110,9 +110,9 @@
 <p><a href="media/15308650901238/ec2.py">ec2.py</a> | <a href="media/15308650901238/ec2.ini">ec2.ini</a></p>
 
 <ol>
-<li>按照文档安装好ansible</li>
+<li>按照官方文档安装好ansible</li>
 <li>将上述两个文件放到一个目录下</li>
-<li>执行指令</li>
+<li>执行指令 (给两个例子自行体会)</li>
 </ol>
 
 <h2 id="toc_1">Sample</h2>
@@ -120,7 +120,7 @@
 <pre><code class="language-shell">ansible -i ec2.py -u ec2-user tag_aws_autoscaling_groupName_EC2ContainerService_gx_app_cluster_EcsInstanceAsg_ERHSYTLKM3T7 -m copy -a &quot;src=~/.ssh/id_rsa dest=~/id_rsa&quot;
 </code></pre>
 
-<pre><code class="language-shell">export HOST_KEY_CHECKING=False; 
+<pre><code class="language-shell">export HOST_KEY_CHECKING=False;  # ssh连接不需要确认
 ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
 </code></pre>
 
