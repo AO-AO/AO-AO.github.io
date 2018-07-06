@@ -116,16 +116,9 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <blockquote>
-<p>参考文档<br/>
-<a href="http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory">http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory</a></p>
-</blockquote>
+      <h2 id="toc_0">夺命三连</h2>
 
-<p>文档中的下载链接可能失效，请戳：<br/>
-<a href="media/15308650901238/ec2.py">ec2.py</a><br/>
-<a href="media/15308650901238/ec2.ini">ec2.ini</a></p>
-
-<h2 id="toc_0">夺命三连</h2>
+<p><a href="media/15308650901238/ec2.py">ec2.py</a> | <a href="media/15308650901238/ec2.ini">ec2.ini</a></p>
 
 <ol>
 <li>按照文档安装好ansible</li>
@@ -141,6 +134,13 @@
 <pre><code class="language-shell">export HOST_KEY_CHECKING=False; 
 ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
 </code></pre>
+
+<h2 id="toc_2"></h2>
+
+<blockquote>
+<p>参考文档<br/>
+<a href="http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory">http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory</a></p>
+</blockquote>
 
 
     
