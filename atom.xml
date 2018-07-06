@@ -4,13 +4,48 @@
   <title><![CDATA[AO-AO]]></title>
   <link href="https://ao-ao.github.io/atom.xml" rel="self"/>
   <link href="https://ao-ao.github.io/"/>
-  <updated>2018-07-05T19:09:19+08:00</updated>
+  <updated>2018-07-05T19:09:25+08:00</updated>
   <id>https://ao-ao.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[Ansible EC2 集群运维]]></title>
+    <link href="https://ao-ao.github.io/15308650901238.html"/>
+    <updated>2018-07-06T16:18:10+08:00</updated>
+    <id>https://ao-ao.github.io/15308650901238.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>参考文档<br/>
+<a href="http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory">http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory</a></p>
+</blockquote>
+
+<p>文档中的下载链接可能失效，请戳：<br/>
+<a href="media/15308650901238/ec2.py">ec2.py</a><br/>
+<a href="media/15308650901238/ec2.ini">ec2.ini</a></p>
+
+<h2 id="toc_0">夺命三连</h2>
+
+<ol>
+<li>按照文档安装好ansible</li>
+<li>将上述两个文件放到一个目录下</li>
+<li>执行指令</li>
+</ol>
+
+<h2 id="toc_1">Sample</h2>
+
+<pre><code class="language-shell">ansible -i ec2.py -u ec2-user tag_aws_autoscaling_groupName_EC2ContainerService_gx_app_cluster_EcsInstanceAsg_ERHSYTLKM3T7 -m copy -a &quot;src=~/.ssh/id_rsa dest=~/id_rsa&quot;
+</code></pre>
+
+<pre><code class="language-shell">export HOST_KEY_CHECKING=False; 
+ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Redis实现分布式资源锁]]></title>
