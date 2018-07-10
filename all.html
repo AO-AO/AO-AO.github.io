@@ -120,7 +120,7 @@
 <pre><code class="language-shell">ansible -i ec2.py -u ec2-user tag_aws_autoscaling_groupName_EC2ContainerService_gx_app_cluster_EcsInstanceAsg_ERHSYTLKM3T7 -m copy -a &quot;src=~/.ssh/id_rsa dest=~/id_rsa&quot;
 </code></pre>
 
-<pre><code class="language-shell">export HOST_KEY_CHECKING=False;  # ssh连接不需要确认
+<pre><code class="language-shell">export ANSIBLE_HOST_KEY_CHECKING=False;  # ssh连接不需要确认
 ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
 </code></pre>
 
