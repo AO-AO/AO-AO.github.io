@@ -98,6 +98,74 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="15434040295016.html">
+                
+                  <h1>VSCode debug remote nodejs(pm2启动)</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">pm2启动文件</h2>
+
+<ol>
+<li>进程启动需要指定--inspect参数</li>
+</ol>
+
+<blockquote>
+<p>--inspect-brk 会让进程等待debugger连接。</p>
+</blockquote>
+
+<p>pm2_start_.json</p>
+
+<pre><code class="language-javascript">
+[{
+  ...
+  &quot;node_args&quot;: &quot;--inspect=0.0.0.0:9229&quot;,
+  ...
+}]
+
+</code></pre>
+
+<ol>
+<li>需要配置为通过fork模式启动</li>
+</ol>
+
+<h2 id="toc_1">VSCode debugger 配置</h2>
+
+<pre><code class="language-javascript">{
+    &quot;type&quot;: &quot;node&quot;,
+    &quot;request&quot;: &quot;attach&quot;,
+    &quot;name&quot;: &quot;Attach to Remote&quot;,
+    &quot;address&quot;: &quot;xxx.xxx.xxx.xxx&quot;,
+    &quot;port&quot;: 9229,
+    &quot;localRoot&quot;: &quot;${workspaceFolder}&quot;,
+    &quot;restart&quot;: true,
+    &quot;remoteRoot&quot;: &quot;xxx/xxx/xxx&quot;,
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/11/28 19:20 PM</span>
+                    
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="15308650901238.html">
                 
                   <h1>Ansible EC2 集群运维</h1>
@@ -155,7 +223,7 @@ ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
 			<div class="article">
                 <a class="clearlink" href="15307872124785.html">
                 
-                  <h1>Redis实现分布式资源锁</h1>
+                  <h1>Redis实现分布式资源锁</h1>
                   <div class="a-content">
                       
                       <div class="a-content-text">
@@ -350,13 +418,19 @@ incrbyex(key, count) {
 	      
 		      
 			      <li class="post">
+			        <a href="15434040295016.html">VSCode debug remote nodejs(pm2启动)</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="15308650901238.html">Ansible EC2 集群运维</a>
 			      </li>
 		     
 		  
 		      
 			      <li class="post">
-			        <a href="15307872124785.html">Redis实现分布式资源锁</a>
+			        <a href="15307872124785.html">Redis实现分布式资源锁</a>
 			      </li>
 		     
 		   

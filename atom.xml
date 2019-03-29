@@ -4,13 +4,61 @@
   <title><![CDATA[AO-AO]]></title>
   <link href="https://ao-ao.github.io/atom.xml" rel="self"/>
   <link href="https://ao-ao.github.io/"/>
-  <updated>2018-07-06T16:47:37+08:00</updated>
+  <updated>2019-03-29T18:37:33+08:00</updated>
   <id>https://ao-ao.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[VSCode debug remote nodejs(pm2启动)]]></title>
+    <link href="https://ao-ao.github.io/15434040295016.html"/>
+    <updated>2018-11-28T19:20:29+08:00</updated>
+    <id>https://ao-ao.github.io/15434040295016.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">pm2启动文件</h2>
+
+<ol>
+<li>进程启动需要指定--inspect参数</li>
+</ol>
+
+<blockquote>
+<p>--inspect-brk 会让进程等待debugger连接。</p>
+</blockquote>
+
+<p>pm2_start_.json</p>
+
+<pre><code class="language-javascript">
+[{
+  ...
+  &quot;node_args&quot;: &quot;--inspect=0.0.0.0:9229&quot;,
+  ...
+}]
+
+</code></pre>
+
+<ol>
+<li>需要配置为通过fork模式启动</li>
+</ol>
+
+<h2 id="toc_1">VSCode debugger 配置</h2>
+
+<pre><code class="language-javascript">{
+    &quot;type&quot;: &quot;node&quot;,
+    &quot;request&quot;: &quot;attach&quot;,
+    &quot;name&quot;: &quot;Attach to Remote&quot;,
+    &quot;address&quot;: &quot;xxx.xxx.xxx.xxx&quot;,
+    &quot;port&quot;: 9229,
+    &quot;localRoot&quot;: &quot;${workspaceFolder}&quot;,
+    &quot;restart&quot;: true,
+    &quot;remoteRoot&quot;: &quot;xxx/xxx/xxx&quot;,
+}
+</code></pre>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Ansible EC2 集群运维]]></title>
@@ -48,7 +96,7 @@ ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Redis实现分布式资源锁]]></title>
+    <title type="html"><![CDATA[Redis实现分布式资源锁]]></title>
     <link href="https://ao-ao.github.io/15307872124785.html"/>
     <updated>2018-07-05T18:40:12+08:00</updated>
     <id>https://ao-ao.github.io/15307872124785.html</id>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  Ansible EC2 集群运维 - AO-AO
+  VSCode debug remote nodejs(pm2启动) - AO-AO
   
   </title>
   
@@ -98,10 +98,10 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>Ansible EC2 集群运维</h1>
+          <h1>VSCode debug remote nodejs(pm2启动)</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2018/7/6 16:18 PM</span>
+          <span class="date">2018/11/28 19:20 PM</span>
 
           
            
@@ -116,31 +116,44 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">夺命三连</h2>
-
-<p><a href="media/15308650901238/ec2.py">ec2.py</a> | <a href="media/15308650901238/ec2.ini">ec2.ini</a></p>
+      <h2 id="toc_0">pm2启动文件</h2>
 
 <ol>
-<li>按照官方文档安装好ansible</li>
-<li>将上述两个文件放到一个目录下</li>
-<li>执行指令 (给两个例子自行体会)</li>
+<li>进程启动需要指定--inspect参数</li>
 </ol>
 
-<h2 id="toc_1">Sample</h2>
-
-<pre><code class="language-shell">ansible -i ec2.py -u ec2-user tag_aws_autoscaling_groupName_EC2ContainerService_gx_app_cluster_EcsInstanceAsg_ERHSYTLKM3T7 -m copy -a &quot;src=~/.ssh/id_rsa dest=~/id_rsa&quot;
-</code></pre>
-
-<pre><code class="language-shell">export ANSIBLE_HOST_KEY_CHECKING=False;  # ssh连接不需要确认
-ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
-</code></pre>
-
-<h2 id="toc_2"></h2>
-
 <blockquote>
-<p>参考文档<br/>
-<a href="http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory">http://www.ansible.com.cn/docs/intro_dynamic_inventory.html#aws-ec2-inventory</a></p>
+<p>--inspect-brk 会让进程等待debugger连接。</p>
 </blockquote>
+
+<p>pm2_start_.json</p>
+
+<pre><code class="language-javascript">
+[{
+  ...
+  &quot;node_args&quot;: &quot;--inspect=0.0.0.0:9229&quot;,
+  ...
+}]
+
+</code></pre>
+
+<ol>
+<li>需要配置为通过fork模式启动</li>
+</ol>
+
+<h2 id="toc_1">VSCode debugger 配置</h2>
+
+<pre><code class="language-javascript">{
+    &quot;type&quot;: &quot;node&quot;,
+    &quot;request&quot;: &quot;attach&quot;,
+    &quot;name&quot;: &quot;Attach to Remote&quot;,
+    &quot;address&quot;: &quot;xxx.xxx.xxx.xxx&quot;,
+    &quot;port&quot;: 9229,
+    &quot;localRoot&quot;: &quot;${workspaceFolder}&quot;,
+    &quot;restart&quot;: true,
+    &quot;remoteRoot&quot;: &quot;xxx/xxx/xxx&quot;,
+}
+</code></pre>
 
 
     
@@ -151,16 +164,13 @@ ansible -i ec2.py -u ubuntu tag_Name_GX_IAP_Proxy -m shell -a &quot;df -lh&quot;
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="15434040295016.html" 
-          title="Previous Post: VSCode debug remote nodejs(pm2启动)">&laquo; VSCode debug remote nodejs(pm2启动)</a>
-      
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="15307872124785.html" 
-          title="Next Post: Redis实现分布式资源锁">Redis实现分布式资源锁 &raquo;</a>
+          <a  href="15308650901238.html" 
+          title="Next Post: Ansible EC2 集群运维">Ansible EC2 集群运维 &raquo;</a>
       
       </p>
         </div>
